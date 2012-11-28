@@ -30,11 +30,7 @@ stop(_State) ->
 get_ini_files() ->
     Etc = filename:join(code:root_dir(), "etc"),
     Default = [filename:join(Etc,"default.ini"), filename:join(Etc,"local.ini")],
-    case init:get_argument(couch_ini) of
-    error ->
-        Default;
-    {ok, [[]]} ->
-        Default;
-    {ok, [Values]} ->
-        Values
+    case application:get_env(couch_config, couch_ini) of
+        {ok, Files} -> Files;
+        _ -> Default
     end.
