@@ -18,7 +18,7 @@
 
 -module(config).
 -behaviour(gen_server).
--vsn(1).
+-vsn(2).
 
 -export([start_link/1, stop/0]).
 
@@ -253,9 +253,17 @@ handle_info(Info, State) ->
     twig:log(error, "config:handle_info Info: ~p~n", [Info]),
     {noreply, State}.
 
-code_change(_OldVsn, State, _Extra) ->
+code_change(1 = OldVsn, State, _Extra) ->
+    twig:log(notice, "~p code_change ~p", [?MODULE, OldVsn]),
+    Stash = ets:tab2list(?MODULE),
+    ets:delete(?MODULE),
+    ets:new(?MODULE, [named_table, set, protected, {read_concurrency, true}]),
+    ets:insert(?MODULE, Stash),
+    {ok, State};
+code_change({down, 2} = OldVsn, State, _Extra) ->
+    %% explicitly leave read_concurrent (unchanged)
+    twig:log(notice, "~p code_change ~p", [?MODULE, OldVsn]),
     {ok, State}.
-
 
 parse_ini_file(IniFile) ->
     IniFilename = config_util:abs_pathname(IniFile),
