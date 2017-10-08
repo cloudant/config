@@ -213,6 +213,8 @@ handle_call({set, Sec, Key, Val, Persist, Reason}, _From, Config) ->
         "~p: [~s] ~s set to ~s for reason ~p",
         [?MODULE, Sec, Key, Val, Reason]
     ),
+    couch_stats:increment_counter([config, set]),
+    couch_stats:increment_counter([config, list_to_atom(Sec), set]),
     case {Persist, Config#config.write_filename} of
         {true, undefined} ->
             ok;
@@ -231,6 +233,8 @@ handle_call({delete, Sec, Key, Persist, Reason}, _From, Config) ->
         "~p: [~s] ~s deleted for reason ~p",
         [?MODULE, Sec, Key, Reason]
     ),
+    couch_stats:increment_counter([config, delete]),
+    couch_stats:increment_counter([config, list_to_atom(Sec), delete]),
     case {Persist, Config#config.write_filename} of
         {true, undefined} ->
             ok;
